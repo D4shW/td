@@ -1,0 +1,1 @@
+DATA = {"Laser": {"cost": 250, "range": 250, "cooldown": 1500, "damage": 40, "color": (255, 0, 255), "type": "beam"}}

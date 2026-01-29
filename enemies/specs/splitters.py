@@ -20,7 +20,7 @@ DATA = {
     
     # Le Super
     "Super Splitter": {
-        "hp": 60, "speed": 2.5, "color": (200, 50, 50), "scale": 1.0, 
+        "hp": 100, "speed": 2.5, "color": (200, 50, 50), "scale": 1.0, 
         "reward": 20, 
         "damage": 2, 
         "split_into": "Splitter"

@@ -3,13 +3,13 @@ from settings import *
 
 DATA = {
     "Soldier": {
-        "hp": 15, "speed": 2.0, "color": RED, "scale": 1.0, 
+        "hp": 20, "speed": 2.0, "color": RED, "scale": 1.0, 
         "reward": 5,   # <--- Récompense standard
         "damage": 1, 
         "gimmick": None
     },
     "Flash": {
-        "hp": 8, "speed": 4.5, "color": NEON_YELLOW, "scale": 0.8, 
+        "hp": 10, "speed": 4.5, "color": NEON_YELLOW, "scale": 0.8, 
         "reward": 10,  # <--- Un peu plus car difficile à attraper
         "damage": 1, 
         "gimmick": "fast"

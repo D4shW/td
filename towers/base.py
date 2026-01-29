@@ -34,6 +34,11 @@ class TowerBase(pygame.sprite.Sprite):
         self.path = path
         self.stun_timer = 0 
         
+        self.orchid_charges = 0 
+        
+        self.valid_path_points = []
+        self.path_calculated = False
+        
         self.branches = {
             "Standard": ("Double Gun", "Ghostbuster"),
             "Sniper": ("Elite Sniper", "Semi Auto"),
@@ -49,8 +54,12 @@ class TowerBase(pygame.sprite.Sprite):
             "Toaster": ("Burnt Toast", "Sticky Jam"),
             "Butterfly": ("Hypnotic Powder", "Betrayal"),
             "Boomerang": ("Triple Loop", "Round Trip"),
-            # --- AJOUT SPY ---
-            "Spy": ("Cyanide", "License to Kill")
+            "Spy": ("Cyanide", "License to Kill"),
+            "Mage": ("Pyromancer", "Cryomancer"),
+            "Crab": ("King Crab", "Mantis Shrimp"),
+            "Rose": ("Carnivorous Garden", "Deep Roots"),
+            "Orchid": ("Prism", "Perfect Harmony"),
+            "Shampoo": ("Conditioner", "Eye Sting")
         }
         
         self.my_minions = pygame.sprite.Group()
@@ -62,7 +71,6 @@ class TowerBase(pygame.sprite.Sprite):
 
         current_time = pygame.time.get_ticks()
 
-        # Invocations
         if self.stats["type"] == "summon":
             for m in list(self.my_minions):
                 if not m.alive(): self.my_minions.remove(m)
@@ -72,12 +80,11 @@ class TowerBase(pygame.sprite.Sprite):
                 self.last_shot = current_time
             return 
 
-        # Tirs (On autorise les tours à 0 dégâts comme Fan/Toaster/Papillon)
-        if self.damage == 0 and self.name not in ["Fan", "Toaster", "Butterfly"]: return 
+        if self.damage == 0 and self.name not in ["Fan", "Toaster", "Butterfly", "Shampoo"]: return 
 
         if current_time - self.last_shot >= self.cooldown:
             target = self.find_target(enemies)
-            if target:
+            if target or self.name == "Rose":
                 self.shoot(target)
                 self.last_shot = current_time
 
@@ -90,7 +97,9 @@ class TowerBase(pygame.sprite.Sprite):
             else:
                 self.damage = int(self.damage * 1.5)
                 self.range = int(self.range * 1.2)
-            pygame.draw.rect(self.image, WHITE, (TILE_SIZE//2 - 4, TILE_SIZE//2 - 4, 8, 8))
+            
+            self.path_calculated = False 
+            self.update_visuals() 
             return
 
         if self.level == 2:
@@ -101,9 +110,34 @@ class TowerBase(pygame.sprite.Sprite):
             branch_name = branch_list[idx]
             self.apply_branch_passives(branch_name)
             
+            self.path_calculated = False
+            self.update_visuals() 
+
+    def update_visuals(self):
+        self.image.fill(self.stats["color"])
+        
+        if self.level == 3:
             pygame.draw.rect(self.image, NEON_YELLOW, (0,0,TILE_SIZE,TILE_SIZE), 4)
-            color_mark = NEON_GREEN if choice == 1 else NEON_BLUE
+            color_mark = NEON_GREEN if self.branch == 1 else NEON_BLUE
             pygame.draw.circle(self.image, color_mark, (TILE_SIZE//2, TILE_SIZE//2), 6)
+        elif self.level == 2:
+            pygame.draw.rect(self.image, WHITE, (0,0,TILE_SIZE,TILE_SIZE), 2)
+            pygame.draw.rect(self.image, WHITE, (TILE_SIZE//2 - 4, TILE_SIZE//2 - 4, 8, 8))
+        else:
+            pygame.draw.rect(self.image, WHITE, (0,0,TILE_SIZE,TILE_SIZE), 2)
+
+        # --- VISUEL ORCHIDEE ---
+        if self.name == "Orchid" and self.orchid_charges > 0:
+            dot_color = (200, 255, 255) # Cyan pâle
+            radius = 3
+            spacing = 8
+            # Centrage des points
+            start_x = TILE_SIZE // 2 - ((self.orchid_charges - 1) * spacing) / 2
+            
+            for i in range(self.orchid_charges):
+                x = int(start_x + i * spacing)
+                y = 6 
+                pygame.draw.circle(self.image, dot_color, (x, y), radius)
 
     def apply_branch_passives(self, branch_name):
         if branch_name == "Semi Auto": self.cooldown = int(self.cooldown / 2)
@@ -113,6 +147,22 @@ class TowerBase(pygame.sprite.Sprite):
             self.cooldown = 50; self.damage = max(1, int(self.damage / 8))
         elif branch_name == "Blue Flame": self.damage = int(self.damage * 2)
         elif branch_name == "Burnt Toast": self.damage = 60
+        elif branch_name == "Pyromancer":
+            self.damage = int(self.damage * 4); self.cooldown = int(self.cooldown * 1.2)
+        elif branch_name == "Cryomancer":
+            self.range = int(self.range * 1.2)
+        elif branch_name == "King Crab":
+            self.damage = int(self.damage * 2); self.cooldown = int(self.cooldown * 1.5); self.range = int(self.range * 1.2)
+        elif branch_name == "Mantis Shrimp":
+            self.damage = max(1, int(self.damage * 0.4)); self.cooldown = 200
+        elif branch_name == "Carnivorous Garden":
+            self.damage = int(self.damage * 1.5)
+        elif branch_name == "Deep Roots":
+            self.cooldown = int(self.cooldown * 0.8)
+        elif branch_name == "Prism":
+            self.damage = int(self.damage * 0.8)
+        elif branch_name == "Eye Sting":
+            self.cooldown = int(self.cooldown * 1.2)
 
     def spawn_robot(self):
         if self.robot_group is not None and self.path is not None:
@@ -146,10 +196,10 @@ class TowerBase(pygame.sprite.Sprite):
             self.my_minions.add(bee); self.robot_group.add(bee)
 
     def find_target(self, enemies):
+        if self.name == "Rose": return None
+
         nearest = None; min_dist = self.range
         for enemy in enemies:
-            # On ignore les ennemis transformés (car ils ne sont techniquement plus dans le groupe enemies)
-            # Mais par sécurité on garde le check Rage si jamais la logique change
             if enemy.status.get("rage", 0) > 0:
                 continue
 
@@ -163,6 +213,25 @@ class TowerBase(pygame.sprite.Sprite):
                         if b_list[0 if self.branch==1 else 1] == "Ghostbuster": can_see = True
                 if can_see and dist < min_dist: min_dist = dist; nearest = enemy
         return nearest
+    
+    def _calculate_valid_path_points(self):
+        self.valid_path_points = []
+        if not self.path or len(self.path) < 2: return
+        
+        for i in range(len(self.path) - 1):
+            p1 = pygame.math.Vector2(self.path[i])
+            p2 = pygame.math.Vector2(self.path[i+1])
+            segment_vec = p2 - p1
+            segment_len = segment_vec.length()
+            if segment_len == 0: continue
+            steps = int(segment_len / 5) 
+            if steps < 1: steps = 1
+            for s in range(steps + 1):
+                t = s / steps
+                point = p1 + segment_vec * t
+                if point.distance_to(self.rect.center) <= self.range:
+                    self.valid_path_points.append(point)
+        self.path_calculated = True
 
     def shoot(self, target):
         ammo_map = {
@@ -172,7 +241,12 @@ class TowerBase(pygame.sprite.Sprite):
             "Cactus": "needle", "Toaster": "toast",
             "Butterfly": "pollen",
             "Boomerang": "wooden_boomerang",
-            "Spy": "silencer_bullet" # <--- AJOUT MAPPING
+            "Spy": "silencer_bullet",
+            "Mage": "magic_bolt",
+            "Crab": "crab_claw",
+            "Rose": "thorn_trap",
+            "Orchid": "crystal_shard",
+            "Shampoo": "bubble"
         }
         p_type = ammo_map.get(self.name, "normal")
         extras = {}
@@ -180,38 +254,75 @@ class TowerBase(pygame.sprite.Sprite):
         
         if self.name == "Fan": extras["knockback"] = True
 
-        # --- LOGIQUE BOOMERANG ---
         if self.name == "Boomerang":
             extras["chain_boost"] = 1
             if self.level == 3:
                 b_name = self.branches.get(self.name, ("A", "B"))[0 if self.branch == 1 else 1]
-                if b_name == "Triple Loop":
-                    extras["chain_boost"] = 3
+                if b_name == "Triple Loop": extras["chain_boost"] = 3
                 elif b_name == "Round Trip":
-                    p_type = "metal_boomerang"
-                    extras["chain_boost"] = 0
-                    extras["piercing"] = True
-                    extras["return"] = True
-                    extras["start_pos"] = self.rect.center
+                    p_type = "metal_boomerang"; extras["chain_boost"] = 0; extras["piercing"] = True; extras["return"] = True; extras["start_pos"] = self.rect.center
 
-        # --- LOGIQUE SPY ---
         if self.name == "Spy":
-            extras["percent_dmg"] = 0.15 # 15% par défaut
-            
+            extras["percent_dmg"] = 0.15 
             if self.level == 3:
                 b_name = self.branches.get(self.name, ("A", "B"))[0 if self.branch == 1 else 1]
-                
-                if b_name == "Cyanide":
-                    extras["percent_dmg"] = 0.25 # 25% de dégâts
-                
-                elif b_name == "License to Kill":
-                    extras["execute_threshold"] = 0.30 # Tue si < 30%
+                if b_name == "Cyanide": extras["percent_dmg"] = 0.25
+                elif b_name == "License to Kill": extras["execute_threshold"] = 0.30 
 
-        if self.level == 3 and self.name not in ["Boomerang", "Spy"]: 
+        if self.name == "Mage" and self.level == 3:
+            b_name = self.branches.get(self.name, ("A", "B"))[0 if self.branch == 1 else 1]
+            if b_name == "Pyromancer": p_type = "fireball"; extras["explode_radius"] = 100 
+            elif b_name == "Cryomancer": p_type = "iceball"; extras["aoe_slow"] = True 
+
+        if self.name == "Crab":
+            extras["apply_shatter"] = True 
+            if self.level == 3:
+                b_name = self.branches.get(self.name, ("A", "B"))[0 if self.branch == 1 else 1]
+                if b_name == "King Crab": p_type = "king_claw"; extras["cleave_radius"] = 80 
+                elif b_name == "Mantis Shrimp": p_type = "sonic_punch"; extras["combo_stun"] = True 
+
+        # --- LOGIQUE ORCHIDEE MODIFIÉE (CYCLE DE 4) ---
+        if self.name == "Orchid":
+            self.orchid_charges += 1
+            
+            # Déclenchement au 4ème tir (donc quand on arrive à 4)
+            if self.orchid_charges >= 4:
+                self.orchid_charges = 0 # Les points disparaissent
+                extras["orchid_burst"] = True 
+            
+            self.update_visuals()
+
+            if self.level == 3:
+                b_name = self.branches.get(self.name, ("A", "B"))[0 if self.branch == 1 else 1]
+                if b_name == "Prism": p_type = "prism_beam"; extras["chain_boost"] = 2 
+                elif b_name == "Perfect Harmony": extras["heal_player"] = True 
+
+        if self.name == "Shampoo":
+            extras["bubble_knockback"] = True
+            if self.level == 3:
+                b_name = self.branches.get(self.name, ("A", "B"))[0 if self.branch == 1 else 1]
+                if b_name == "Conditioner": extras["bubble_slow"] = True
+                elif b_name == "Eye Sting": p_type = "stinging_bubble"; extras["bubble_confuse"] = True
+
+        if self.name == "Rose":
+            if not self.path_calculated:
+                self._calculate_valid_path_points()
+            
+            if self.valid_path_points:
+                valid_spot = random.choice(self.valid_path_points)
+                extras["is_trap"] = True; extras["life_time"] = 10000 
+                if self.level == 3:
+                    b_name = self.branches.get(self.name, ("A", "B"))[0 if self.branch == 1 else 1]
+                    if b_name == "Carnivorous Garden": extras["trap_explode"] = True; p_type = "explosive_thorn"
+                    elif b_name == "Deep Roots": extras["trap_root"] = True
+                
+                self.projectile_manager.create_projectile(p_type, valid_spot, None, self.damage, extras=extras)
+            return 
+
+        if self.level == 3 and self.name not in ["Boomerang", "Spy", "Mage", "Crab", "Rose", "Orchid", "Shampoo"]: 
             branch_list = self.branches.get(self.name, ("A", "B"))
             idx = 0 if self.branch == 1 else 1
             b_name = branch_list[idx]
-            
             if b_name == "Double Gun": shots = 2
             elif b_name == "Ghostbuster": extras["hit_invisible"] = True
             elif b_name == "Elite Sniper": extras["break_shield"] = True

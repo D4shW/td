@@ -21,7 +21,7 @@ class Projectile(pygame.sprite.Sprite):
         self.speed = self.stats.get("speed", 10)
         self.extras = extras if extras else {}
         self.p_type = p_type
-        self.life_time = 3000 
+        self.life_time = self.extras.get("life_time", 3000)
         
         self.hit_list = []      
         self.returning = False  
@@ -31,6 +31,9 @@ class Projectile(pygame.sprite.Sprite):
         self.life_time -= dt
         if self.life_time <= 0:
             self.kill(); return
+
+        if self.extras.get("is_trap"):
+            return 
 
         if self.returning:
             dist = self.pos.distance_to(self.start_pos)
@@ -75,6 +78,15 @@ class ProjectileManager:
     def update(self, dt):
         for proj in list(self.projectile_group):
             
+            if proj.extras.get("is_trap"):
+                hits = pygame.sprite.spritecollide(proj, self.enemy_group, False)
+                for enemy in hits:
+                    if enemy.alive():
+                        self.hit_target(proj, enemy)
+                        proj.kill() 
+                        break 
+                continue 
+
             if proj.extras.get("piercing") or proj.extras.get("return"):
                 hits = pygame.sprite.spritecollide(proj, self.enemy_group, False)
                 for enemy in hits:
@@ -101,7 +113,6 @@ class ProjectileManager:
                             best_dist = 300
                             new_target = None
                             for e in self.enemy_group:
-                                # On ne ricoche pas sur les ennemis déjà morts
                                 if e != proj.target and e.alive():
                                     d = proj.pos.distance_to(e.pos)
                                     if d < best_dist: best_dist = d; new_target = e
@@ -122,27 +133,67 @@ class ProjectileManager:
         if projectile.extras.get("blue_flame"): dmg *= 2
         if projectile.extras.get("hit_invisible") and target.invisible: dmg *= 1.5
 
-        # --- LOGIQUE SPY (Dégâts en %) CORRIGÉE ---
+        if target.status.get("shatter", 0) > 0:
+            dmg += 1
+
         pct = projectile.extras.get("percent_dmg")
         if pct:
-            # Dégâts = % des PV MAX
             percent_damage = target.max_hp * pct
-            
-            # Correction : Conversion explicite en int pour éviter les flottants
             final_percent_dmg = int(percent_damage)
-            
-            # Debug : Décommente la ligne ci-dessous si tu veux voir les dégâts dans la console
-            # print(f"[SPY] MaxHP: {target.max_hp} | %: {pct} | Dégâts calculés: {final_percent_dmg}")
-
-            # On prend le max entre les dégâts de base et le % pour assurer un minimum
             dmg = max(dmg, final_percent_dmg)
 
-        # --- LOGIQUE SPY (Exécution) ---
         exec_thresh = projectile.extras.get("execute_threshold")
         if exec_thresh:
-            # Si PV actuels sous le seuil (ex: 30%)
             if target.hp < (target.max_hp * exec_thresh):
-                dmg = target.hp + target.shield + 1000 # On tape assez fort pour tout tuer
+                dmg = target.hp + target.shield + 1000 
+
+        # --- ORCHID LOGIC (BURST VIA PROJECTILE) ---
+        if projectile.extras.get("orchid_burst"):
+            bonus_dmg = 80
+            if projectile.extras.get("heal_player"):
+                 target.reward += 5 
+            target.take_damage(bonus_dmg, "magic")
+
+        explode_r = projectile.extras.get("explode_radius")
+        cleave_r = projectile.extras.get("cleave_radius")
+        trap_explode = projectile.extras.get("trap_explode")
+        
+        radius = 0
+        if explode_r: radius = explode_r
+        elif cleave_r: radius = cleave_r
+        elif trap_explode: radius = 100
+        
+        if radius > 0:
+            c = pygame.math.Vector2(target.rect.center)
+            for e in self.enemy_group:
+                if e != target and e.alive():
+                    if c.distance_to(e.rect.center) <= radius:
+                        if cleave_r and projectile.extras.get("apply_shatter"):
+                            e.status["shatter"] = 3000
+                        e.take_damage(dmg, "explosive")
+
+        if projectile.extras.get("apply_shatter"):
+            target.status["shatter"] = 3000
+            
+        if projectile.extras.get("combo_stun"):
+            if not hasattr(target, "mantis_hits"): target.mantis_hits = 0
+            target.mantis_hits += 1
+            if target.mantis_hits >= 10:
+                target.mantis_hits = 0
+                target.status["stun"] = 500
+                target.path_index = max(0, target.path_index - 0.2)
+
+        if projectile.extras.get("trap_root"):
+            target.status["stun"] = 1500
+
+        if projectile.extras.get("bubble_slow"):
+            target.status["slow"] = 2000
+        if projectile.extras.get("bubble_confuse"):
+            target.status["confuse"] = 3000
+
+        if projectile.extras.get("bubble_knockback"):
+            if "boss" not in target.name.lower():
+                target.path_index = max(0, target.path_index - 1.0) 
 
         d_type = "normal"
         if projectile.p_type == "explosive": d_type = "explosive"
@@ -179,7 +230,6 @@ class ProjectileManager:
             for e in self.enemy_group:
                 if c.distance_to(e.rect.center) <= 100: e.status["slow"] = 1000
 
-        # --- TRANSFORMATION EN ROBOT (RAGE/BETRAYAL) ---
         if projectile.extras.get("rage_effect"):
             name_lower = target.name.lower()
             is_boss = "boss" in name_lower or "mega" in name_lower or "giga" in name_lower or "construct" in name_lower
@@ -189,9 +239,9 @@ class ProjectileManager:
                     "hp": target.hp,
                     "max_hp": target.max_hp,
                     "speed": target.base_speed,
-                    "color": (0,0,0), # Ignoré car image fournie
+                    "color": (0,0,0), 
                     "scale": target.stats_data.get("scale", 1.0),
-                    "image": target.image.copy() # On passe l'image de l'ennemi
+                    "image": target.image.copy() 
                 }
                 
                 robot = FriendlyRobot(target.path, stats)

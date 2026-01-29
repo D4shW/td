@@ -54,7 +54,7 @@ TOWER_DESCRIPTIONS = {
         "group": "Machine",
         "gimmick": "Tir instantané (Rayon).",
         "lvl2": "Augmente les dégâts.",
-        "lvl3_a": "Laser Beam : Tir continu très rapide (faibles dégâts mais constants).",
+        "lvl3_a": "Laser Beam : Tir continu très rapide (faibles mais constants).",
         "lvl3_b": "Laser Mk2 : Le rayon rebondit sur 2 ennemis supplémentaires."
     },
     "Fan": {
@@ -112,6 +112,40 @@ TOWER_DESCRIPTIONS = {
         "lvl2": "Rechargement plus rapide.",
         "lvl3_a": "Cyanide : La balle inflige 25% des PV MAX.",
         "lvl3_b": "License to Kill : Tue instantanément les ennemis sous 30% de vie."
+    },
+    "Mage": {
+        "group": "Magique",
+        "gimmick": "Tir magique standard.",
+        "lvl2": "Augmente les dégâts et la portée.",
+        "lvl3_a": "Pyromancer : Boule de feu qui explose (Gros dégâts de zone).",
+        "lvl3_b": "Cryomancer : Boule de glace (Slow)."
+    },
+    "Crab": {
+        "group": "Nature",
+        "gimmick": "Coups de pince qui appliquent 'Fragile' (+1 dégât subi) pendant 3s.",
+        "lvl2": "Pince plus rapide et plus douloureuse.",
+        "lvl3_a": "King Crab : Enorme pince qui frappe en zone.",
+        "lvl3_b": "Mantis Shrimp : Frappe 5x plus vite. 10ème coup stun."
+    },"Rose": {
+        "group": "Plante",
+        "gimmick": "Pose des ronces sur le chemin. Les ennemis qui marchent dessus subissent des dégâts.",
+        "lvl2": "Les ronces durent plus longtemps.",
+        "lvl3_a": "Jardin Carnivore : Les ronces explosent quand on marche dessus.",
+        "lvl3_b": "Racines Profondes : Les ronces immobilisent l'ennemi pendant 1.5s."
+    },
+    "Orchid": {
+        "group": "Magique",
+        "gimmick": "Chaque tir ajoute une charge. À 3 charges, l'ennemi subit un éclatement de dégâts.",
+        "lvl2": "Tire plus vite pour charger la résonance rapidement.",
+        "lvl3_a": "Prisme : Le tir ricoche vers 2 autres ennemis (Chain).",
+        "lvl3_b": "Harmonie Parfaite : Soigne vos PV de base .",
+    },
+    "Shampoo": {
+        "group": "Absurde",
+        "gimmick": "Tire des bulles (0 dégât) qui repoussent les ennemis (Knockback).",
+        "lvl2": "Plus de bulles !",
+        "lvl3_a": "Après-shampoing : Laisse une flaque glissante (Ralentissement).",
+        "lvl3_b": "Ça pique les yeux ! : Les bulles rendent les ennemis Confus.",
     }
 }
 

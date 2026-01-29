@@ -41,7 +41,7 @@ class Game:
         self.game_ui = None
         
         self.deck = []
-        self.money = 600
+        self.money = 700
         self.lives = 20
         self.selected_tower_idx = None
         self.inspected_tower = None
@@ -74,7 +74,7 @@ class Game:
     def goto_menu(self): self.state = 0 
 
     def reset_game_stats(self):
-        self.money = 600; self.lives = 20
+        self.money = 700; self.lives = 20
         self.enemies.empty(); self.sprites.empty(); self.towers.empty()
         self.robots.empty(); self.projectiles.empty()
         self.waves.reset(); self.wave_was_active = False

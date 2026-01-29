@@ -1,6 +1,6 @@
 DATA = {
     "Berserker": {
-        "hp": 80,
+        "hp": 100,
         "speed": 1.5,         # Vitesse de base lente
         "color": (139, 0, 0), # Rouge Sang (Dark Red)
         "scale": 1.1,
@@ -9,7 +9,7 @@ DATA = {
         "gimmick": "berserk"  # Tag pour la logique de rage
     },
     "Guardian": {
-        "hp": 60,
+        "hp": 100,
         "speed": 1.8,
         "color": (70, 130, 180), # Bleu Métallique (Steel Blue)
         "scale": 1.2,

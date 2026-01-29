@@ -12,4 +12,7 @@ from .toaster import DATA as TOAST
 from .butterfly import DATA as BUTT
 from .boomerang import DATA as BOOM
 from .spy import DATA as SPY
-TOWER_DATA = {**STD, **SNIP, **CAN, **ELEM, **RAP, **LAS, **SUP, **FAN, **HIVE, **CAC, **TOAST, **BUTT, **BOOM, **SPY}
+from .mage import DATA as MAGE
+from .crab import DATA as CRAB
+from .extensions import DATA as EXT
+TOWER_DATA = {**STD, **SNIP, **CAN, **ELEM, **RAP, **LAS, **SUP, **FAN, **HIVE, **CAC, **TOAST, **BUTT, **BOOM, **SPY, **MAGE, **CRAB, **EXT}

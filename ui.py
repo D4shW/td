@@ -2,150 +2,152 @@ import pygame
 from settings import *
 from towers.specs import TOWER_DATA
 
+# Couleurs
 GRAY = (100, 100, 100)
 GRAY_DARK = (50, 50, 50)
 BLUE_PANEL = (20, 30, 50)
 
-# ... (Le dictionnaire TOWER_DESCRIPTIONS reste inchangé) ...
+# --- DESCRIPTIONS COMPLÈTES ---
 TOWER_DESCRIPTIONS = {
     "Standard": {
         "group": "Classique",
-        "gimmick": "Aucune. Tour polyvalente de base.",
+        "gimmick": "Tour polyvalente de base.",
         "lvl2": "Augmente Dégâts et Portée.",
         "lvl3_a": "Double Gun : Tire deux balles à la fois.",
-        "lvl3_b": "Ghostbuster : Peut voir et toucher les ennemis Invisibles."
+        "lvl3_b": "Ghostbuster : Voit les ennemis Invisibles."
     },
     "Sniper": {
         "group": "Militaire",
-        "gimmick": "Portée immense et dégâts élevés, mais lent.",
-        "lvl2": "Augmente Dégâts et Portée critique.",
-        "lvl3_a": "Elite Sniper : Brise les Boucliers (Bleu) en un coup.",
-        "lvl3_b": "Semi Auto : Divise le temps de recharge par 2."
+        "gimmick": "Portée immense, dégâts élevés, lent.",
+        "lvl2": "Augmente Dégâts critiques.",
+        "lvl3_a": "Elite Sniper : Brise les Boucliers (Bleu).",
+        "lvl3_b": "Semi Auto : Tire 2x plus vite."
     },
     "Gatling": {
         "group": "Militaire",
-        "gimmick": "Tire très vite, dégâts faibles par balle.",
-        "lvl2": "Augmente la vitesse de tir.",
-        "lvl3_a": "Double Uzi : Tire 2 projectiles par coup (Mitraille).",
-        "lvl3_b": "Modded Gatling : Vitesse de tir extrême (x3)."
+        "gimmick": "Tire très vite, dégâts faibles.",
+        "lvl2": "Encore plus rapide.",
+        "lvl3_a": "Double Uzi : Tire 2 projectiles (Mitraille).",
+        "lvl3_b": "Modded Gatling : Vitesse extrême (x3)."
     },
     "Canon": {
-        "group": "Militaire",
-        "gimmick": "Dégâts de zone (Explosif).",
-        "lvl2": "Augmente la zone d'explosion.",
-        "lvl3_a": "Missile Launcher : Projectiles plus rapides et plus gros.",
-        "lvl3_b": "Slime Cannon : Laisse une zone qui ralentit les ennemis."
+        "group": "Explosif",
+        "gimmick": "Dégâts de zone (Explosion).",
+        "lvl2": "Zone d'explosion plus grande.",
+        "lvl3_a": "Missile Launcher : Projectiles rapides.",
+        "lvl3_b": "Slime Cannon : Laisse une zone de ralentissement."
     },
     "Cryo": {
-        "group": "Machine",
+        "group": "Contrôle",
         "gimmick": "Ralentit les ennemis (Glace).",
-        "lvl2": "Augmente la durée du ralentissement.",
-        "lvl3_a": "Deep Freeze : Congèle (Stun) les ennemis sur place.",
-        "lvl3_b": "Blizzard : Ralentit tous les ennemis dans une zone autour."
+        "lvl2": "Ralentissement plus fort.",
+        "lvl3_a": "Deep Freeze : Congèle (Stun) périodiquement.",
+        "lvl3_b": "Blizzard : Aura de ralentissement permanent."
     },
     "Flamethrower": {
-        "group": "Machine",
+        "group": "Zone",
         "gimmick": "Brûle les ennemis (Dégâts sur la durée).",
-        "lvl2": "Augmente la durée de brûlure.",
-        "lvl3_a": "Blue Flame : Dégâts de feu doublés.",
-        "lvl3_b": "Incinerator : Brûlure permanente tant qu'ils sont visés."
+        "lvl2": "Brûlure plus intense.",
+        "lvl3_a": "Blue Flame : Dégâts doublés.",
+        "lvl3_b": "Incinerator : Brûlure permanente."
     },
     "Laser": {
-        "group": "Machine",
-        "gimmick": "Tir instantané (Rayon).",
-        "lvl2": "Augmente les dégâts.",
-        "lvl3_a": "Laser Beam : Tir continu très rapide (faibles mais constants).",
-        "lvl3_b": "Laser Mk2 : Le rayon rebondit sur 2 ennemis supplémentaires."
+        "group": "Tech",
+        "gimmick": "Rayon instantané, traverse l'armure.",
+        "lvl2": "Augmente la puissance.",
+        "lvl3_a": "Laser Beam : Tir continu rapide.",
+        "lvl3_b": "Laser Mk2 : Rebondit sur 2 ennemis (Chain)."
     },
     "Fan": {
-        "group": "Machine",
-        "gimmick": "Repousse les ennemis (Knockback). 0 Dégâts.",
-        "lvl2": "Souffle plus fort (meilleur recul).",
-        "lvl3_a": "Industrial Fan : Ralentissement lourd permanent.",
-        "lvl3_b": "Boosted Fan : Peut repousser les Boss."
+        "group": "Absurde",
+        "gimmick": "Repousse les ennemis. 0 Dégâts.",
+        "lvl2": "Souffle plus fort.",
+        "lvl3_a": "Industrial Fan : Ralentissement lourd.",
+        "lvl3_b": "Boosted Fan : Repousse les Boss."
     },
     "Hive": {
-        "group": "Insecte",
-        "gimmick": "Invoque des abeilles qui attaquent librement.",
-        "lvl2": "Invoque plus d'abeilles.",
-        "lvl3_a": "Killer Swarm : 8 Abeilles très rapides.",
-        "lvl3_b": "Giant Hornets : 2 Frelons robustes qui font mal."
+        "group": "Nature",
+        "gimmick": "Invoque des abeilles autonomes.",
+        "lvl2": "Plus d'abeilles.",
+        "lvl3_a": "Killer Swarm : 8 Abeilles rapides.",
+        "lvl3_b": "Giant Hornets : 2 Frelons robustes."
     },
     "Robot Factory": {
-        "group": "Machine",
+        "group": "Invocation",
         "gimmick": "Pose des robots bloqueurs sur la route.",
         "lvl2": "Robots plus résistants.",
-        "lvl3_a": "Swarm Maker : 5 petits robots faibles (masse).",
-        "lvl3_b": "Mecha Factory : 1 Robot Tank géant (doré)."
+        "lvl3_a": "Swarm Maker : 5 petits robots (masse).",
+        "lvl3_b": "Mecha Factory : 1 Robot Tank géant."
     },
     "Cactus": {
         "group": "Plante",
-        "gimmick": "Tire des épines.",
-        "lvl2": "Meilleure cadence.",
-        "lvl3_a": "Twin Spikes : Tire 2 épines à la fois.",
-        "lvl3_b": "Armor Piercer : Ignore l'armure/bouclier des ennemis."
+        "gimmick": "Tire des épines. Renvoie les dégâts.",
+        "lvl2": "Plus d'épines.",
+        "lvl3_a": "Twin Spikes : Tire 2 épines.",
+        "lvl3_b": "Armor Piercer : Ignore l'armure."
     },
     "Toaster": {
         "group": "Absurde",
-        "gimmick": "Lance des toasts ! (Projectiles physiques).",
-        "lvl2": "Toasts plus croustillants (Dégâts up).",
-        "lvl3_a": "Burnt Toast : Toasts enflammés (Dégâts de feu élevés).",
-        "lvl3_b": "Sticky Jam : Toasts à la confiture (Ralentit fort)."
+        "gimmick": "Lance des toasts physiques.",
+        "lvl2": "Dégâts augmentés.",
+        "lvl3_a": "Burnt Toast : Dégâts de feu élevés.",
+        "lvl3_b": "Sticky Jam : Toasts qui ralentissent."
     },
     "Butterfly": {
         "group": "Insecte",
-        "gimmick": "Contrôle mental. 0 Dégâts.",
-        "lvl2": "Meilleure portée de charme.",
-        "lvl3_a": "Hypnotic Powder : Confus (Stop) tous les ennemis en zone.",
-        "lvl3_b": "Betrayal : Rage (Les ennemis s'attaquent entre eux)."
+        "gimmick": "Charme les ennemis (ils reculent).",
+        "lvl2": "Charme plus long.",
+        "lvl3_a": "Hypnotic Powder : Confusion de zone.",
+        "lvl3_b": "Betrayal : Transforme un ennemi en allié."
     },
     "Boomerang": {
-        "group": "Classique",
+        "group": "Habileté",
         "gimmick": "Ricoche sur un 2ème ennemi.",
-        "lvl2": "Meilleure portée de rebond.",
-        "lvl3_a": "Triple Loop : Ricoche sur 3 ennemis consécutifs.",
-        "lvl3_b": "Round Trip : Traverse tout et revient (Aller-Retour)."
+        "lvl2": "Meilleure portée.",
+        "lvl3_a": "Triple Loop : Ricoche sur 3 ennemis.",
+        "lvl3_b": "Round Trip : Traverse tout et revient."
     },
     "Spy": {
-        "group": "Classique",
-        "gimmick": "Balles Anti-Tank : Inflige 15% des PV MAX de l'ennemi par tir.",
-        "lvl2": "Rechargement plus rapide.",
-        "lvl3_a": "Cyanide : La balle inflige 25% des PV MAX.",
-        "lvl3_b": "License to Kill : Tue instantanément les ennemis sous 30% de vie."
+        "group": "Tactique",
+        "gimmick": "Inflige 15% des PV MAX de la cible.",
+        "lvl2": "Rechargement rapide.",
+        "lvl3_a": "Cyanide : Inflige 25% des PV MAX.",
+        "lvl3_b": "License to Kill : Exécute si < 30% PV."
     },
     "Mage": {
         "group": "Magique",
-        "gimmick": "Tir magique standard.",
-        "lvl2": "Augmente les dégâts et la portée.",
-        "lvl3_a": "Pyromancer : Boule de feu qui explose (Gros dégâts de zone).",
-        "lvl3_b": "Cryomancer : Boule de glace (Slow)."
+        "gimmick": "Tir magique (10 dégâts).",
+        "lvl2": "Augmente portée.",
+        "lvl3_a": "Pyromancer : Boule de feu explosive (Dégâts x4).",
+        "lvl3_b": "Cryomancer : Boule de glace (Zone Slow)."
     },
     "Crab": {
         "group": "Nature",
-        "gimmick": "Coups de pince qui appliquent 'Fragile' (+1 dégât subi) pendant 3s.",
-        "lvl2": "Pince plus rapide et plus douloureuse.",
-        "lvl3_a": "King Crab : Enorme pince qui frappe en zone.",
-        "lvl3_b": "Mantis Shrimp : Frappe 5x plus vite. 10ème coup stun."
-    },"Rose": {
+        "gimmick": "Applique 'Fragile' (+1 dégât subi).",
+        "lvl2": "Pince plus rapide.",
+        "lvl3_a": "King Crab : Frappe en zone (Fragile de masse).",
+        "lvl3_b": "Mantis Shrimp : Vitesse extrême + Stun."
+    },
+    "Rose": {
         "group": "Plante",
-        "gimmick": "Pose des ronces sur le chemin. Les ennemis qui marchent dessus subissent des dégâts.",
-        "lvl2": "Les ronces durent plus longtemps.",
-        "lvl3_a": "Jardin Carnivore : Les ronces explosent quand on marche dessus.",
-        "lvl3_b": "Racines Profondes : Les ronces immobilisent l'ennemi pendant 1.5s."
+        "gimmick": "Pose des ronces (7 dégâts) sur le chemin.",
+        "lvl2": "Pose plus souvent.",
+        "lvl3_a": "Jardin Carnivore : Les ronces explosent.",
+        "lvl3_b": "Racines Profondes : Immobilise (Root) 1.5s."
     },
     "Orchid": {
         "group": "Magique",
-        "gimmick": "Chaque tir ajoute une charge. À 3 charges, l'ennemi subit un éclatement de dégâts.",
-        "lvl2": "Tire plus vite pour charger la résonance rapidement.",
-        "lvl3_a": "Prisme : Le tir ricoche vers 2 autres ennemis (Chain).",
-        "lvl3_b": "Harmonie Parfaite : Soigne vos PV de base .",
+        "gimmick": "Charge. 4ème tir = Burst de dégâts.",
+        "lvl2": "Recharge plus vite.",
+        "lvl3_a": "Prisme : Ricoche sur 2 cibles.",
+        "lvl3_b": "Harmonie Parfaite : Invoque 3 cristaux orbitaux qui tirent."
     },
     "Shampoo": {
         "group": "Absurde",
-        "gimmick": "Tire des bulles (0 dégât) qui repoussent les ennemis (Knockback).",
-        "lvl2": "Plus de bulles !",
-        "lvl3_a": "Après-shampoing : Laisse une flaque glissante (Ralentissement).",
-        "lvl3_b": "Ça pique les yeux ! : Les bulles rendent les ennemis Confus.",
+        "gimmick": "Bulles qui repoussent (Knockback).",
+        "lvl2": "Plus de bulles.",
+        "lvl3_a": "Après-shampoing : Flaque glissante (Slow).",
+        "lvl3_b": "Ça pique les yeux : Rend Confus."
     }
 }
 
@@ -193,8 +195,7 @@ class MainMenu:
         cx, cy = SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2
         self.btn_play = Button("JOUER", cx - 100, cy - 60, 200, 50, NEON_GREEN, BLACK, self.go_play)
         self.btn_deck = Button("DECK", cx - 100, cy + 10, 200, 50, NEON_BLUE, BLACK, self.go_deck)
-        self.btn_full = Button("PLEIN ÉCRAN", cx - 100, cy + 80, 200, 50, NEON_PURPLE, BLACK, None)
-        self.buttons = [self.btn_play, self.btn_deck, self.btn_full]
+        self.buttons = [self.btn_play, self.btn_deck]
 
     def go_play(self, btn): self.on_play()
     def go_deck(self, btn): self.on_deck()
@@ -205,7 +206,7 @@ class MainMenu:
     def draw(self, surface):
         surface.fill(BLACK)
         font = pygame.font.SysFont("Arial", 60, bold=True)
-        title = font.render("TOWER DEFENSE ULTIMATE", True, NEON_YELLOW)
+        title = font.render("TOWER DEFENSE", True, NEON_YELLOW)
         rect = title.get_rect(center=(SCREEN_WIDTH//2, 150))
         surface.blit(title, rect)
         for b in self.buttons: b.draw(surface)
@@ -215,8 +216,8 @@ class DeckBuilder:
         self.on_finish = on_finish
         self.available_towers = list(TOWER_DATA.keys())
         self.selected_towers = []
-        
         self.cards_data = [] 
+        self.font_desc = pygame.font.SysFont("Arial", 18) # Police pour la description
         
         card_w, card_h = 140, 180 
         gap_x, gap_y = 40, 40     
@@ -224,7 +225,6 @@ class DeckBuilder:
         
         total_row_width = (items_per_row * card_w) + ((items_per_row - 1) * gap_x)
         start_x = (SCREEN_WIDTH - total_row_width) // 2
-        
         start_y = 200 
         x, y = start_x, start_y
         
@@ -232,18 +232,13 @@ class DeckBuilder:
             btn_sel = Button("CHOISIR", x + 10, y + 140, 80, 30, GRAY, WHITE, self.toggle_select)
             btn_sel.tower_name = t_name
             btn_sel.font_size = 14
-            
             btn_inf = Button("?", x + 100, y + 140, 30, 30, NEON_BLUE, WHITE, self.show_info)
             btn_inf.tower_name = t_name
             
             self.cards_data.append({
-                'name': t_name,
-                'base_x': x,
-                'base_y': y,
-                'width': card_w,
-                'height': card_h,
-                'btn_select': btn_sel,
-                'btn_info': btn_inf
+                'name': t_name, 'base_x': x, 'base_y': y,
+                'width': card_w, 'height': card_h,
+                'btn_select': btn_sel, 'btn_info': btn_inf
             })
             
             x += card_w + gap_x
@@ -255,163 +250,121 @@ class DeckBuilder:
         self.content_height = (rows * (card_h + gap_y)) 
         
         self.scroll_y = 0
-        self.scroll_speed = 30
         self.view_rect = pygame.Rect(0, 180, SCREEN_WIDTH, 450) 
         self.max_scroll = max(0, self.content_height - self.view_rect.height + 50)
-
         self.btn_validate = Button("VALIDER", SCREEN_WIDTH//2 - 100, 660, 200, 50, NEON_GREEN, BLACK, self.finish)
-        
         self.inspected_tower = None
         self.close_info_btn = Button("X", SCREEN_WIDTH//2 + 250, 150, 40, 40, RED, WHITE, self.close_info)
 
+    def draw_text_wrapped(self, surface, text, pos, max_width, color, font):
+        words = text.split(' ')
+        space = font.size(' ')[0]
+        x, y = pos
+        line_height = font.get_linesize()
+        for word in words:
+            word_surface = font.render(word, True, color)
+            word_w, word_h = word_surface.get_size()
+            if x + word_w >= pos[0] + max_width:
+                x = pos[0]; y += line_height
+            surface.blit(word_surface, (x, y))
+            x += word_w + space
+        return y + line_height
+
     def toggle_select(self, btn):
-        name = btn.tower_name
-        if name in self.selected_towers:
-            self.selected_towers.remove(name)
-        elif len(self.selected_towers) < 6:
-            self.selected_towers.append(name)
+        if btn.tower_name in self.selected_towers:
+            self.selected_towers.remove(btn.tower_name)
+        elif len(self.selected_towers) < 8:
+            self.selected_towers.append(btn.tower_name)
         self.update_buttons_state()
 
-    def show_info(self, btn):
-        self.inspected_tower = btn.tower_name
-
-    def close_info(self, btn):
-        self.inspected_tower = None
+    def show_info(self, btn): self.inspected_tower = btn.tower_name
+    def close_info(self, btn): self.inspected_tower = None
 
     def update_buttons_state(self):
         for card in self.cards_data:
             b = card['btn_select']
             if card['name'] in self.selected_towers:
-                b.text = "RETIRER"
-                b.color = NEON_GREEN
-                b.text_color = BLACK
+                b.text = "RETIRER"; b.color = NEON_GREEN; b.text_color = BLACK
             else:
-                b.text = "CHOISIR"
-                b.color = GRAY
-                b.text_color = WHITE
+                b.text = "CHOISIR"; b.color = GRAY; b.text_color = WHITE
 
     def finish(self, btn):
-        if len(self.selected_towers) > 0:
-            self.on_finish(self.selected_towers)
+        if len(self.selected_towers) > 0: self.on_finish(self.selected_towers)
 
     def update(self, event):
         if self.inspected_tower:
             self.close_info_btn.handle_event(event)
             return
-
         if event.type == pygame.MOUSEWHEEL:
-            self.scroll_y -= event.y * self.scroll_speed
-            if self.scroll_y < 0: self.scroll_y = 0
-            if self.scroll_y > self.max_scroll: self.scroll_y = self.max_scroll
-
+            self.scroll_y = max(0, min(self.max_scroll, self.scroll_y - event.y * 30))
         for card in self.cards_data:
             curr_y = card['base_y'] - self.scroll_y
-            
             card['btn_select'].rect.y = curr_y + 140
             card['btn_info'].rect.y = curr_y + 140
-            
-            card_rect = pygame.Rect(card['base_x'], curr_y, card['width'], card['height'])
-            if self.view_rect.colliderect(card_rect):
+            if self.view_rect.colliderect(pygame.Rect(card['base_x'], curr_y, card['width'], card['height'])):
                 card['btn_select'].handle_event(event)
                 card['btn_info'].handle_event(event)
-
         self.btn_validate.handle_event(event)
 
     def draw(self, surface):
         surface.fill(BLACK)
-        
         font = pygame.font.SysFont("Arial", 50)
-        title = font.render(f"CONSTRUIRE LE DECK ({len(self.selected_towers)}/6)", True, WHITE)
+        title = font.render(f"DECK ({len(self.selected_towers)}/8)", True, WHITE)
         surface.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, 80))
-        
         surface.set_clip(self.view_rect)
         
         for card in self.cards_data:
             curr_y = card['base_y'] - self.scroll_y
             rect = pygame.Rect(card['base_x'], curr_y, card['width'], card['height'])
-            
             if self.view_rect.colliderect(rect):
-                color_bg = (30, 30, 40)
-                if card['name'] in self.selected_towers:
-                    color_bg = (50, 60, 50)
-                    pygame.draw.rect(surface, NEON_GREEN, rect, 2)
-                else:
-                    pygame.draw.rect(surface, GRAY, rect, 1)
+                col = (50, 60, 50) if card['name'] in self.selected_towers else (30, 30, 40)
+                pygame.draw.rect(surface, NEON_GREEN if card['name'] in self.selected_towers else GRAY, rect, 2)
+                pygame.draw.rect(surface, col, (rect.x+1, rect.y+1, rect.w-2, rect.h-2))
                 
-                pygame.draw.rect(surface, color_bg, (rect.x+1, rect.y+1, rect.w-2, rect.h-2))
-
-                font_nm = pygame.font.SysFont("Arial", 18, bold=True)
-                nm = font_nm.render(card['name'], True, NEON_YELLOW)
-                nm_r = nm.get_rect(centerx=rect.centerx, top=rect.y + 10)
-                surface.blit(nm, nm_r)
-
+                nm = pygame.font.SysFont("Arial", 18, bold=True).render(card['name'], True, NEON_YELLOW)
+                surface.blit(nm, nm.get_rect(centerx=rect.centerx, top=rect.y + 10))
+                
                 data = TOWER_DATA[card['name']]
                 pygame.draw.rect(surface, data["color"], (rect.centerx - 20, rect.y + 40, 40, 40))
+                pr = pygame.font.SysFont("Arial", 20, bold=True).render(f"{data['cost']}$", True, WHITE)
+                surface.blit(pr, pr.get_rect(centerx=rect.centerx, top=rect.y + 90))
                 
-                font_pr = pygame.font.SysFont("Arial", 20, bold=True)
-                pr = font_pr.render(f"{data['cost']}$", True, WHITE)
-                pr_r = pr.get_rect(centerx=rect.centerx, top=rect.y + 90)
-                surface.blit(pr, pr_r)
-
-                card['btn_select'].draw(surface)
-                card['btn_info'].draw(surface)
-
+                card['btn_select'].draw(surface); card['btn_info'].draw(surface)
         surface.set_clip(None)
-
         self.btn_validate.draw(surface)
-
-        if self.inspected_tower:
-            self.draw_info_overlay(surface)
+        if self.inspected_tower: self.draw_info_overlay(surface)
 
     def draw_info_overlay(self, surface):
-        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        overlay.set_alpha(180)
-        overlay.fill(BLACK)
+        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT)); overlay.set_alpha(180); overlay.fill(BLACK)
         surface.blit(overlay, (0,0))
-
-        w, h = 600, 400
         cx, cy = SCREEN_WIDTH//2, SCREEN_HEIGHT//2
-        rect = pygame.Rect(cx - w//2, cy - h//2, w, h)
-        pygame.draw.rect(surface, BLUE_PANEL, rect)
-        pygame.draw.rect(surface, WHITE, rect, 3)
-
+        rect = pygame.Rect(cx - 300, cy - 200, 600, 400)
+        pygame.draw.rect(surface, BLUE_PANEL, rect); pygame.draw.rect(surface, WHITE, rect, 3)
+        
         name = self.inspected_tower
         desc = TOWER_DESCRIPTIONS.get(name, {})
-        data = TOWER_DATA[name]
+        font_t = pygame.font.SysFont("Arial", 32, bold=True)
+        surface.blit(font_t.render(f"{name.upper()}", True, NEON_YELLOW), (rect.x + 30, rect.y + 30))
         
-        group = desc.get("group", "Inconnu")
-        title_text = f"{name.upper()} ({group.upper()})"
+        # --- AFFICHAGE DESCRIPTIONS ---
+        y_off = rect.y + 80
+        x_off = rect.x + 30
+        w_txt = 540 # Largeur texte
         
-        font_title = pygame.font.SysFont("Arial", 32, bold=True)
-        t = font_title.render(title_text, True, NEON_YELLOW)
-        surface.blit(t, (rect.x + 30, rect.y + 30))
-
-        font_txt = pygame.font.SysFont("Arial", 20)
-        stats = f"Coût: {data['cost']}$  |  Portée: {data['range']}  |  Dégâts: {data['damage']}"
-        s_surf = font_txt.render(stats, True, WHITE)
-        surface.blit(s_surf, (rect.x + 30, rect.y + 80))
-
-        gimmick = desc.get("gimmick", "Aucune.")
-        g_surf = font_txt.render(f"Spécial : {gimmick}", True, NEON_BLUE)
-        surface.blit(g_surf, (rect.x + 30, rect.y + 120))
-
-        pygame.draw.line(surface, GRAY, (rect.x+20, rect.y+160), (rect.right-20, rect.y+160), 1)
-
-        font_sub = pygame.font.SysFont("Arial", 22, bold=True)
-        surface.blit(font_sub.render("AMÉLIORATIONS", True, WHITE), (rect.x + 30, rect.y + 170))
-
-        lvl2_txt = desc.get("lvl2", "Amélioration standard.")
-        l2 = font_txt.render(f"Niveau 2 : {lvl2_txt}", True, NEON_GREEN)
-        surface.blit(l2, (rect.x + 30, rect.y + 210))
-
-        l3a_txt = desc.get("lvl3_a", "Option A")
-        l3b_txt = desc.get("lvl3_b", "Option B")
-        
-        l3a = font_txt.render(f"Niveau 3 (A) : {l3a_txt}", True, NEON_PURPLE)
-        l3b = font_txt.render(f"Niveau 3 (B) : {l3b_txt}", True, NEON_PURPLE)
-        
-        surface.blit(l3a, (rect.x + 30, rect.y + 250))
-        surface.blit(l3b, (rect.x + 30, rect.y + 290))
+        if "group" in desc:
+             y_off = self.draw_text_wrapped(surface, f"Type: {desc['group']}", (x_off, y_off), w_txt, NEON_BLUE, self.font_desc)
+             y_off += 10
+        if "gimmick" in desc:
+             y_off = self.draw_text_wrapped(surface, desc["gimmick"], (x_off, y_off), w_txt, WHITE, self.font_desc)
+             y_off += 20
+        if "lvl2" in desc:
+             y_off = self.draw_text_wrapped(surface, f"Niv 2: {desc['lvl2']}", (x_off, y_off), w_txt, (200, 200, 200), self.font_desc)
+             y_off += 10
+        if "lvl3_a" in desc:
+             y_off = self.draw_text_wrapped(surface, f"Lvl 3 A: {desc['lvl3_a']}", (x_off, y_off), w_txt, NEON_GREEN, self.font_desc)
+             y_off += 5
+        if "lvl3_b" in desc:
+             y_off = self.draw_text_wrapped(surface, f"Lvl 3 B: {desc['lvl3_b']}", (x_off, y_off), w_txt, NEON_BLUE, self.font_desc)
 
         self.close_info_btn.rect.topleft = (rect.right - 50, rect.y + 10)
         self.close_info_btn.draw(surface)
@@ -420,152 +373,157 @@ class GameUI:
     def __init__(self, deck, money, lives):
         self.deck = deck
         self.buttons = []
-        
-        btn_size = 50 
-        gap = 10
+        btn_size = 50; gap = 10
         total_w = len(deck) * (btn_size + gap)
         start_x = (SCREEN_WIDTH - total_w) // 2
         y = 45 
-        
         self.btn_pause = Button("PAUSE", SCREEN_WIDTH - 100, 10, 80, 30, NEON_BLUE, BLACK, None)
         
         x = start_x
         for t_name in deck:
             data = TOWER_DATA[t_name]
-            cost = str(data["cost"]) + "$"
-            b = Button(cost, x, y, btn_size, btn_size, GRAY_DARK, WHITE, None)
-            b.tower_name = t_name
-            b.icon_color = data["color"]
-            self.buttons.append(b)
-            x += btn_size + gap
+            b = Button(f"{data['cost']}$", x, y, btn_size, btn_size, GRAY_DARK, WHITE, None)
+            b.tower_name = t_name; b.icon_color = data["color"]
+            self.buttons.append(b); x += btn_size + gap
+
+        # Police pour le texte wrappé
+        self.font_desc = pygame.font.SysFont("Arial", 16)
+
+    def draw_text_wrapped(self, surface, text, pos, max_width, color, font):
+        words = text.split(' ')
+        space = font.size(' ')[0]
+        x, y = pos
+        line_height = font.get_linesize()
+        for word in words:
+            word_surface = font.render(word, True, color)
+            word_w, word_h = word_surface.get_size()
+            if x + word_w >= pos[0] + max_width:
+                x = pos[0]; y += line_height
+            surface.blit(word_surface, (x, y))
+            x += word_w + space
+        return y + line_height
 
     def draw(self, surface, money, lives, wave_display, selected_tower_idx, tower_count, is_paused):
         pygame.draw.rect(surface, (20, 20, 30), (0, 0, SCREEN_WIDTH, 100))
         pygame.draw.line(surface, WHITE, (0, 100), (SCREEN_WIDTH, 100), 2)
         font = pygame.font.SysFont("Arial", 24, bold=True)
         
-        txt_money = font.render(f"Argent: {money}$", True, NEON_GREEN)
-        surface.blit(txt_money, (40, 10))
-        
-        txt_lives = font.render(f"Vies: {lives}", True, RED)
-        surface.blit(txt_lives, (250, 10))
-        
-        txt_wave = font.render(f"Vague: {wave_display}", True, WHITE)
-        surface.blit(txt_wave, (SCREEN_WIDTH // 2 - 50, 10))
-        
-        color_towers = NEON_BLUE if tower_count < 20 else RED
-        txt_towers = font.render(f"Tours: {tower_count}/20", True, color_towers)
-        surface.blit(txt_towers, (SCREEN_WIDTH - 250, 10)) 
+        surface.blit(font.render(f"Argent: {money}$", True, NEON_GREEN), (40, 10))
+        surface.blit(font.render(f"Vies: {lives}", True, RED), (250, 10))
+        surface.blit(font.render(f"Vague: {wave_display}", True, WHITE), (SCREEN_WIDTH // 2 - 50, 10))
+        surface.blit(font.render(f"Tours: {tower_count}/20", True, NEON_BLUE if tower_count < 20 else RED), (SCREEN_WIDTH - 250, 10)) 
 
-        if is_paused:
-            self.btn_pause.text = "PLAY"
-            self.btn_pause.color = NEON_GREEN
-        else:
-            self.btn_pause.text = "PAUSE"
-            self.btn_pause.color = NEON_BLUE
-        
-        # --- CORRECTION ICI : On utilise juste .draw() ---
+        self.btn_pause.text = "PLAY" if is_paused else "PAUSE"
+        self.btn_pause.color = NEON_GREEN if is_paused else NEON_BLUE
         self.btn_pause.draw(surface)
-        
-        # J'ai supprimé les lignes manuelles ci-dessous qui créaient le doublon :
-        # font_p = pygame.font.SysFont("Arial", 16, bold=True)
-        # txt_p = font_p.render(self.btn_pause.text, True, BLACK)
-        # rect_p = txt_p.get_rect(center=self.btn_pause.rect.center)
-        # surface.blit(txt_p, rect_p)
 
         for i, btn in enumerate(self.buttons):
             if selected_tower_idx == i:
                 pygame.draw.rect(surface, WHITE, (btn.rect.x-3, btn.rect.y-3, btn.rect.w+6, btn.rect.h+6), 3)
             pygame.draw.rect(surface, GRAY_DARK, btn.rect)
             pygame.draw.rect(surface, btn.icon_color, (btn.rect.x+10, btn.rect.y+8, 30, 30))
-            font_price = pygame.font.SysFont("Arial", 12, bold=True)
-            p_txt = font_price.render(btn.text, True, WHITE)
-            p_rect = p_txt.get_rect(centerx=btn.rect.centerx, bottom=btn.rect.bottom - 2)
-            surface.blit(p_txt, p_rect)
+            p_txt = pygame.font.SysFont("Arial", 12, bold=True).render(btn.text, True, WHITE)
+            surface.blit(p_txt, p_txt.get_rect(centerx=btn.rect.centerx, bottom=btn.rect.bottom - 2))
 
     def draw_upgrade_panel(self, surface, tower):
-        panel_rect = pygame.Rect(SCREEN_WIDTH//2 - 200, SCREEN_HEIGHT - 120, 400, 100)
-        pygame.draw.rect(surface, BLUE_PANEL, panel_rect)
-        pygame.draw.rect(surface, WHITE, panel_rect, 2)
+        # --- PANNEAU LATÉRAL DROIT ---
+        panel_w = 370 # Largeur augmentée
+        panel_rect = pygame.Rect(SCREEN_WIDTH - panel_w, 100, panel_w, SCREEN_HEIGHT - 100)
+        pygame.draw.rect(surface, (30, 30, 40), panel_rect)
+        pygame.draw.line(surface, WHITE, (panel_rect.x, 100), (panel_rect.x, SCREEN_HEIGHT), 2)
         
-        font = pygame.font.SysFont("Arial", 20, bold=True)
-        font_small = pygame.font.SysFont("Arial", 14, bold=True)
+        font_title = pygame.font.SysFont("Arial", 22, bold=True)
         
-        name = font.render(f"{tower.name} (Lvl {tower.level})", True, NEON_YELLOW)
-        surface.blit(name, (panel_rect.x + 20, panel_rect.y + 10))
+        y_off = 120
+        x_off = panel_rect.x + 20
+        name_txt = font_title.render(f"{tower.name}", True, tower.stats["color"])
+        surface.blit(name_txt, (x_off, y_off))
+        y_off += 30
         
-        close_rect = pygame.Rect(panel_rect.right - 30, panel_rect.y, 30, 30)
-        pygame.draw.rect(surface, RED, close_rect)
-        x_txt = font.render("X", True, WHITE)
-        surface.blit(x_txt, (close_rect.x + 8, close_rect.y + 4))
+        lvl_txt = font_title.render(f"Niveau {tower.level}", True, WHITE)
+        surface.blit(lvl_txt, (x_off, y_off))
+        y_off += 40
         
-        if tower.level == 1:
-            upgrade_cost = int(tower.stats["cost"] * 1.5)
-            btn_txt = f"UPGRADE LVL 2 ({upgrade_cost}$)"
-            up_rect = pygame.Rect(panel_rect.x + 20, panel_rect.y + 55, 360, 30)
-            pygame.draw.rect(surface, NEON_GREEN, up_rect)
-            up_surf = font.render(btn_txt, True, BLACK)
-            text_rect = up_surf.get_rect(center=up_rect.center)
-            surface.blit(up_surf, text_rect)
-            
-        elif tower.level == 2:
-            upgrade_cost = tower.stats["cost"] + 700 
-            branches = tower.branches.get(tower.name, ("Option 1", "Option 2"))
-            
-            # Gauche
-            btn1_rect = pygame.Rect(panel_rect.x + 20, panel_rect.y + 50, 170, 40)
-            pygame.draw.rect(surface, NEON_GREEN, btn1_rect)
-            txt1 = font_small.render(branches[0], True, BLACK)
-            txt1_p = font_small.render(f"{upgrade_cost}$", True, BLACK)
-            surface.blit(txt1, (btn1_rect.x + 5, btn1_rect.y + 2))
-            surface.blit(txt1_p, (btn1_rect.x + 5, btn1_rect.y + 22))
+        stats = f"Dmg: {tower.damage} | Rg: {tower.range}"
+        surface.blit(self.font_desc.render(stats, True, (200, 200, 200)), (x_off, y_off))
+        y_off += 30
+        
+        close_btn = pygame.Rect(panel_rect.right - 40, 110, 30, 30)
+        pygame.draw.rect(surface, RED, close_btn)
+        surface.blit(font_title.render("X", True, WHITE), (close_btn.x+7, close_btn.y+2))
 
-            # Droite
-            btn2_rect = pygame.Rect(panel_rect.x + 210, panel_rect.y + 50, 170, 40)
-            pygame.draw.rect(surface, NEON_BLUE, btn2_rect)
-            txt2 = font_small.render(branches[1], True, BLACK)
-            txt2_p = font_small.render(f"{upgrade_cost}$", True, BLACK)
-            surface.blit(txt2, (btn2_rect.x + 5, btn2_rect.y + 2))
-            surface.blit(txt2_p, (btn2_rect.x + 5, btn2_rect.y + 22))
+        desc_data = TOWER_DESCRIPTIONS.get(tower.name, {})
+        text_width = panel_w - 40 # 330
+        
+        if "gimmick" in desc_data:
+            y_off = self.draw_text_wrapped(surface, desc_data["gimmick"], (x_off, y_off), text_width, (200, 255, 200), self.font_desc)
+            y_off += 20
+
+        if tower.level == 1:
+            cost = int(tower.stats["cost"] * 1.5)
+            up_rect = pygame.Rect(x_off, y_off, text_width, 40)
+            pygame.draw.rect(surface, NEON_GREEN, up_rect, border_radius=5)
+            up_txt = font_title.render(f"Améliorer ({cost}$)", True, BLACK)
+            surface.blit(up_txt, up_txt.get_rect(center=up_rect.center))
+            y_off += 50
+            
+            if "lvl2" in desc_data:
+                y_off = self.draw_text_wrapped(surface, f"Niv 2: {desc_data['lvl2']}", (x_off, y_off), text_width, (180, 180, 180), self.font_desc)
+
+        elif tower.level == 2:
+            cost = tower.stats["cost"] + 700
+            
+            btn1 = pygame.Rect(x_off, y_off, text_width, 50)
+            pygame.draw.rect(surface, NEON_GREEN, btn1, border_radius=5)
+            branches = tower.branches.get(tower.name, ("A", "B"))
+            t1 = font_title.render(branches[0], True, BLACK)
+            t1p = self.font_desc.render(f"{cost}$", True, BLACK)
+            surface.blit(t1, (btn1.x+10, btn1.y+5)); surface.blit(t1p, (btn1.right-50, btn1.y+15))
+            y_off += 60
+            
+            desc_a = desc_data.get("lvl3_a", "???")
+            y_off = self.draw_text_wrapped(surface, desc_a, (x_off, y_off), text_width, (150, 255, 150), self.font_desc)
+            y_off += 20
+
+            btn2 = pygame.Rect(x_off, y_off, text_width, 50)
+            pygame.draw.rect(surface, NEON_BLUE, btn2, border_radius=5)
+            t2 = font_title.render(branches[1], True, BLACK)
+            surface.blit(t2, (btn2.x+10, btn2.y+5)); surface.blit(t1p, (btn2.right-50, btn2.y+15))
+            y_off += 60
+            
+            desc_b = desc_data.get("lvl3_b", "???")
+            y_off = self.draw_text_wrapped(surface, desc_b, (x_off, y_off), text_width, (150, 150, 255), self.font_desc)
 
         else:
-            b_name = tower.branches.get(tower.name, ("",""))[tower.branch-1]
-            max_txt = font.render(f"SPÉCIALITÉ : {b_name}", True, NEON_YELLOW)
-            surface.blit(max_txt, (panel_rect.x + 20, panel_rect.y + 50))
+            surf_max = font_title.render("NIVEAU MAX", True, NEON_YELLOW)
+            surface.blit(surf_max, (x_off, y_off))
+            y_off += 40
+            
+            b_name = tower.branches.get(tower.name, ("A", "B"))[0 if tower.branch == 1 else 1]
+            col = NEON_GREEN if tower.branch == 1 else NEON_BLUE
+            desc_key = "lvl3_a" if tower.branch == 1 else "lvl3_b"
+            bonus_desc = desc_data.get(desc_key, b_name)
+            
+            y_off = self.draw_text_wrapped(surface, f"Bonus Actif: {bonus_desc}", (x_off, y_off), text_width, col, self.font_desc)
 
 class EndGameMenu:
     def __init__(self, on_menu):
         self.on_menu = on_menu
         cx, cy = SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2
         self.btn_menu = Button("MENU PRINCIPAL", cx - 125, cy + 50, 250, 60, NEON_BLUE, BLACK, self.go_menu)
-        self.title_text = ""
-        self.title_color = WHITE
+        self.title_text = ""; self.title_color = WHITE
 
     def set_mode(self, mode):
-        if mode == "win":
-            self.title_text = "VICTOIRE !"
-            self.title_color = NEON_GREEN
-        else:
-            self.title_text = "GAME OVER"
-            self.title_color = RED
+        if mode == "win": self.title_text = "VICTOIRE !"; self.title_color = NEON_GREEN
+        else: self.title_text = "GAME OVER"; self.title_color = RED
 
-    def go_menu(self, btn):
-        self.on_menu()
-
-    def update(self, event):
-        self.btn_menu.handle_event(event)
+    def go_menu(self, btn): self.on_menu()
+    def update(self, event): self.btn_menu.handle_event(event)
 
     def draw(self, surface):
-        s = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        s.set_alpha(200) 
-        s.fill(BLACK)
+        s = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT)); s.set_alpha(200); s.fill(BLACK)
         surface.blit(s, (0,0))
         font = pygame.font.SysFont("Arial", 80, bold=True)
         txt = font.render(self.title_text, True, self.title_color)
-        rect = txt.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 50))
-        surface.blit(txt, rect)
+        surface.blit(txt, txt.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 50)))
         self.btn_menu.draw(surface)
-        font_btn = pygame.font.SysFont("Arial", 24, bold=True)
-        t_btn = font_btn.render("MENU PRINCIPAL", True, BLACK)
-        r_btn = t_btn.get_rect(center=self.btn_menu.rect.center)
-        surface.blit(t_btn, r_btn)

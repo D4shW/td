@@ -114,8 +114,10 @@ class TowerBase(pygame.sprite.Sprite):
             self.update_visuals() 
 
     def update_visuals(self):
+        """Met à jour l'image de la tour (bordures, cristaux, points de charge...)"""
         self.image.fill(self.stats["color"])
         
+        # Bordures de niveau
         if self.level == 3:
             pygame.draw.rect(self.image, NEON_YELLOW, (0,0,TILE_SIZE,TILE_SIZE), 4)
             color_mark = NEON_GREEN if self.branch == 1 else NEON_BLUE
@@ -127,17 +129,29 @@ class TowerBase(pygame.sprite.Sprite):
             pygame.draw.rect(self.image, WHITE, (0,0,TILE_SIZE,TILE_SIZE), 2)
 
         # --- VISUEL ORCHIDEE ---
-        if self.name == "Orchid" and self.orchid_charges > 0:
-            dot_color = (200, 255, 255) # Cyan pâle
-            radius = 3
-            spacing = 8
-            # Centrage des points
-            start_x = TILE_SIZE // 2 - ((self.orchid_charges - 1) * spacing) / 2
-            
-            for i in range(self.orchid_charges):
-                x = int(start_x + i * spacing)
-                y = 6 
-                pygame.draw.circle(self.image, dot_color, (x, y), radius)
+        if self.name == "Orchid":
+            # Si c'est l'amélioration "Perfect Harmony" (Branch 2), on dessine 3 cristaux autour
+            if self.level == 3 and self.branch == 2:
+                orbit_dist = 14
+                for i in range(3):
+                    # 3 points à 120 degrés d'écart
+                    angle = math.radians(i * 120 - 90) # -90 pour commencer en haut
+                    cx = TILE_SIZE // 2 + math.cos(angle) * orbit_dist
+                    cy = TILE_SIZE // 2 + math.sin(angle) * orbit_dist
+                    # Dessin du petit cristal
+                    pygame.draw.polygon(self.image, (200, 255, 255), [
+                        (cx, cy - 3), (cx + 3, cy), (cx, cy + 3), (cx - 3, cy)
+                    ])
+
+            # Points de charge (1 à 3 points au centre/haut)
+            if self.orchid_charges > 0:
+                dot_color = (255, 255, 255)
+                spacing = 6
+                start_x = TILE_SIZE // 2 - ((self.orchid_charges - 1) * spacing) / 2
+                for i in range(self.orchid_charges):
+                    x = int(start_x + i * spacing)
+                    y = 8 # Position en haut
+                    pygame.draw.circle(self.image, dot_color, (x, y), 2)
 
     def apply_branch_passives(self, branch_name):
         if branch_name == "Semi Auto": self.cooldown = int(self.cooldown / 2)
@@ -163,6 +177,11 @@ class TowerBase(pygame.sprite.Sprite):
             self.damage = int(self.damage * 0.8)
         elif branch_name == "Eye Sting":
             self.cooldown = int(self.cooldown * 1.2)
+        
+        # --- ORCHID PERFECT HARMONY ---
+        elif branch_name == "Perfect Harmony":
+            # On divise les dégâts par 2 car on tire 3 fois (Total 150% dégâts)
+            self.damage = int(self.damage * 0.5) 
 
     def spawn_robot(self):
         if self.robot_group is not None and self.path is not None:
@@ -281,21 +300,36 @@ class TowerBase(pygame.sprite.Sprite):
                 if b_name == "King Crab": p_type = "king_claw"; extras["cleave_radius"] = 80 
                 elif b_name == "Mantis Shrimp": p_type = "sonic_punch"; extras["combo_stun"] = True 
 
-        # --- LOGIQUE ORCHIDEE MODIFIÉE (CYCLE DE 4) ---
+        # --- LOGIQUE ORCHIDEE ---
         if self.name == "Orchid":
             self.orchid_charges += 1
             
-            # Déclenchement au 4ème tir (donc quand on arrive à 4)
+            # Burst au 4ème tir
             if self.orchid_charges >= 4:
-                self.orchid_charges = 0 # Les points disparaissent
+                self.orchid_charges = 0
                 extras["orchid_burst"] = True 
             
             self.update_visuals()
 
             if self.level == 3:
                 b_name = self.branches.get(self.name, ("A", "B"))[0 if self.branch == 1 else 1]
-                if b_name == "Prism": p_type = "prism_beam"; extras["chain_boost"] = 2 
-                elif b_name == "Perfect Harmony": extras["heal_player"] = True 
+                if b_name == "Prism": 
+                    p_type = "prism_beam"
+                    extras["chain_boost"] = 2 
+                elif b_name == "Perfect Harmony": 
+                    # --- NOUVELLE LOGIQUE PERFECT HARMONY ---
+                    # Tire 3 projectiles depuis les cristaux (positions orbitales)
+                    orbit_dist = 14
+                    for i in range(3):
+                        angle = math.radians(i * 120 - 90)
+                        start_pos = (
+                            self.rect.centerx + math.cos(angle) * orbit_dist,
+                            self.rect.centery + math.sin(angle) * orbit_dist
+                        )
+                        self.projectile_manager.create_projectile(p_type, start_pos, target, self.damage, extras=extras)
+                    
+                    # On retourne ici pour NE PAS tirer le coup central par défaut
+                    return 
 
         if self.name == "Shampoo":
             extras["bubble_knockback"] = True

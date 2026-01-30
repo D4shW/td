@@ -1,7 +1,7 @@
 import pygame
 import sys
 from settings import *
-from ui import MainMenu, DeckBuilder, GameUI, EndGameMenu
+from ui import MainMenu, DeckBuilder, GameUI, EndGameMenu, TOWER_DESCRIPTIONS
 from towers.base import TowerBase
 from towers.specs import TOWER_DATA
 from ammo.manager import ProjectileManager
@@ -15,6 +15,8 @@ class Game:
         self.clock = pygame.time.Clock()
         self.state = 0 
         self.paused = False
+        
+        self.ui_font = pygame.font.SysFont("Arial", 16)
         
         self.sprites = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
@@ -65,8 +67,9 @@ class Game:
     
     def goto_game(self):
         self.reset_game_stats()
-        # --- DECK PAR DÉFAUT AVEC LE SPY ---
-        if not self.deck: self.deck = ["Standard", "Spy", "Toaster", "Butterfly", "Canon", "Gatling"]
+        # --- DECK PAR DÉFAUT (8 TOURS) ---
+        if not self.deck: 
+            self.deck = ["Rose", "Orchid", "Shampoo", "Crab", "Mage", "Spy", "Sniper", "Gatling"]
         self.game_ui = GameUI(self.deck, self.money, self.lives)
         self.state = 2; self.paused = False
         self.selected_tower_idx = None; self.inspected_tower = None
@@ -107,6 +110,18 @@ class Game:
                 if self.inspected_tower == t: self.inspected_tower = None
                 t.kill(); return 
 
+    def _calculate_text_height(self, text, max_width):
+        words = text.split(' ')
+        space = self.ui_font.size(' ')[0]
+        x = 0; y = 0
+        line_height = self.ui_font.get_linesize()
+        for word in words:
+            w_word = self.ui_font.size(word)[0]
+            if x + w_word >= max_width:
+                x = 0; y += line_height
+            x += w_word + space
+        return y + line_height
+
     def handle_game_click(self, pos):
         mx, my = pos
         if self.game_ui:
@@ -116,23 +131,38 @@ class Game:
                     self.selected_tower_idx = i; self.inspected_tower = None; return
         
         if self.inspected_tower:
-             panel_rect = pygame.Rect(SCREEN_WIDTH//2 - 200, SCREEN_HEIGHT - 120, 400, 100)
-             close_rect = pygame.Rect(panel_rect.right - 30, panel_rect.y, 30, 30)
+             panel_w = 300
+             panel_x = SCREEN_WIDTH - panel_w
+             close_rect = pygame.Rect(SCREEN_WIDTH - 40, 110, 30, 30)
              if close_rect.collidepoint(mx, my): self.inspected_tower = None; return
 
+             y_off = 120 + 30 + 40 + 30 
+             
+             desc_data = TOWER_DESCRIPTIONS.get(self.inspected_tower.name, {})
+             if "gimmick" in desc_data:
+                 h = self._calculate_text_height(desc_data["gimmick"], 260)
+                 y_off += h + 20
+
              if self.inspected_tower.level == 1:
-                 upgrade_rect = pygame.Rect(panel_rect.x + 20, panel_rect.y + 55, 360, 30)
+                 upgrade_rect = pygame.Rect(panel_x + 20, y_off, 260, 40)
                  if upgrade_rect.collidepoint(mx, my):
                      cost = int(self.inspected_tower.stats["cost"] * 1.5)
                      if self.money >= cost: self.money -= cost; self.inspected_tower.upgrade()
                      return
+             
              elif self.inspected_tower.level == 2:
                  cost = self.inspected_tower.stats["cost"] + 700
-                 btn1_rect = pygame.Rect(panel_rect.x + 20, panel_rect.y + 50, 170, 40)
+                 btn1_rect = pygame.Rect(panel_x + 20, y_off, 260, 50)
                  if btn1_rect.collidepoint(mx, my):
                      if self.money >= cost: self.money -= cost; self.inspected_tower.upgrade(1)
                      return
-                 btn2_rect = pygame.Rect(panel_rect.x + 210, panel_rect.y + 50, 170, 40)
+                 
+                 y_off += 60 
+                 if "lvl3_a" in desc_data:
+                     h_a = self._calculate_text_height(desc_data["lvl3_a"], 260)
+                     y_off += h_a + 20
+                 
+                 btn2_rect = pygame.Rect(panel_x + 20, y_off, 260, 50)
                  if btn2_rect.collidepoint(mx, my):
                      if self.money >= cost: self.money -= cost; self.inspected_tower.upgrade(2)
                      return
@@ -263,6 +293,9 @@ class Game:
 
     def draw_preview(self, mx, my):
         if self.selected_tower_idx is None: return
+        # Protection contre index hors limite (deck de 8)
+        if self.selected_tower_idx >= len(self.deck): return 
+        
         t_name = self.deck[self.selected_tower_idx]
         data = TOWER_DATA[t_name]
         rect = pygame.Rect(0, 0, TILE_SIZE, TILE_SIZE); rect.center = (mx, my)

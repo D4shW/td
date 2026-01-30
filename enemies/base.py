@@ -44,16 +44,14 @@ class EnemyBase(pygame.sprite.Sprite):
             "vulnerable": 0,
             "charm": 0, "confuse": 0, 
             "rage": 0,
-            "shatter": 0 # Ajout pour le Crabe
+            "shatter": 0
         }
         
         self.reached_end = False 
         self.processed_death = False
         self.tesla_tick = 0 
         
-        # Ajout pour Mantis Shrimp
         self.mantis_hits = 0
-        # Ajout pour Orchid
         self.crystal_stacks = 0
 
     def update(self, dt):
@@ -103,7 +101,7 @@ class EnemyBase(pygame.sprite.Sprite):
                 self.current_speed = self.base_speed * speed_mod
 
         if self.status["vulnerable"] > 0: self.status["vulnerable"] -= dt
-        if self.status["shatter"] > 0: self.status["shatter"] -= dt # Timer Shatter
+        if self.status["shatter"] > 0: self.status["shatter"] -= dt
         
         if self.status["burn"] > 0:
             self.status["burn"] -= dt
@@ -135,18 +133,19 @@ class EnemyBase(pygame.sprite.Sprite):
             pygame.draw.circle(surface, (0, 255, 0), (self.rect.right, self.rect.top), 4)
         if self.status["charm"] > 0: 
             pygame.draw.circle(surface, (255, 105, 180), (self.rect.centerx, self.rect.top - 15), 5)
-        if self.status["shatter"] > 0: # Indicateur visuel pour Shatter (Optionnel)
+        if self.status["shatter"] > 0: 
             pygame.draw.circle(surface, (255, 127, 80), (self.rect.left, self.rect.top), 4)
 
     def move(self, dt):
         if self.current_speed == 0 and self.status["charm"] <= 0: return
         
-        # Sécurité : convertir l'index en entier avant de l'utiliser
+        # --- FIX IMPORTANT : Conversion en entier ---
         idx = int(self.path_index)
 
         if self.status["charm"] > 0:
-            # Recul charmé
             if idx < 0: idx = 0
+            # Sécurité pour éviter index out of range si reculé trop loin
+            if idx >= len(self.path): idx = len(self.path) - 1
             
             target = pygame.math.Vector2(self.path[idx])
             direction = target - self.pos
@@ -158,14 +157,14 @@ class EnemyBase(pygame.sprite.Sprite):
                 self.rect.center = self.pos
             
             if self.pos.distance_to(target) < 10:
-                self.path_index = int(max(0, self.path_index - 1))
+                # On recule l'index
+                self.path_index = max(0, self.path_index - 1)
         else:
-            # Mouvement normal
             if self.path_index >= len(self.path) - 1: return
             
-            # Ici on utilise idx + 1 (qui est un entier)
+            # --- FIX IMPORTANT : Utilisation de idx (int) ---
             next_idx = idx + 1
-            if next_idx >= len(self.path): return # Sécurité fin de liste
+            if next_idx >= len(self.path): return 
 
             target = pygame.math.Vector2(self.path[next_idx])
             direction = target - self.pos 
